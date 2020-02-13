@@ -50,6 +50,37 @@
 
    Propose two implementation phases for the LDF EFD, phase 1 is focused on data replication from the Summit EDF to LDF, and phase 2 is focused on aggregation and long-term storage options.
 
+TL;DR
+=====
+
+Action items for phase 1.
+
+NCSA:
+
+- Make sure the LSP cluster has enough resources for phase 1. See section 2.1
+
+- Make sure we have mount points on each node to configure and deploy the ``local-path-provisioner``. See section 2.1.1
+
+- Configure DNS for the services listed in section 2.1.2.
+
+- Create and install TLS certificate for the services listed in section 2.1.2.
+
+- Configure firewall to give external access to LDF EFD services from the Tucson network (IP ranges ``140.252.32.0/23`` and ``140.252.33.0/23``) and from the NOAO VPN (IP ranges ``140.252.90.0/23``)
+
+
+SQuaRE:
+
+- Deploy the LDF EFD using Argo CD.
+
+- Contact IT to whitelist the LSP cluster to connect to the Kafka broker running at the Summit.
+
+- Deploy and test the Replicator connector.
+
+- Investigate DM-23307 to avoid exporting NFS with the ``no_root_squash option``.
+
+- Figure out license with Confluent to run the Replicator connector after the trial period.
+
+
 Introduction
 ============
 
