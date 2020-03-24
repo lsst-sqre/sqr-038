@@ -103,7 +103,7 @@ The minimum LDF EFD deployment to make this possible includes the following serv
 
 - **Argo CD:** used to manage the LDF EFD deployment.
 
-- **Confluent Kafka:**  Kafka, Zookeeper, Kafka connect, and Schema Registry deployments.
+- **Confluent Kafka:**  Kafka, Zookeeper, Kafka connect, Schema Registry, and Control Center deployments.
 
 - **Kafka replicator connector:**  the data replication from the Summit EFD to the LDF EFD is done through the Kafka replicator connector, as described in :sqr:`034` :cite:`SQR-034`.
 
@@ -132,6 +132,10 @@ From :sqr:`029` :cite:`SQR-029` investigations, the proposed hardware configurat
 
 - Mid-term storage for Kafka and InfluxDB (4TB, SSD preferentially)
 
+Deployment configuration
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The configuration for the EFD deployment on the LSP clusters is implemented in the `ncsa-int` and `ncsa-stable` environments in the `Argo CD EFD <https://github.com/lsst-sqre/argocd-efd>`_ project.
 
 Storage
 ^^^^^^^
@@ -140,8 +144,7 @@ From OCS-REQ-0048, the mean ingestion rate required for the EFD is 1.9MB/s. At t
 
 The EFD deployment uses the ``local-path-provisioner`` to have a storage class available for dynamic provisioning. With that, we don't need to create persistent volumes manually, and we can use the Confluent Kafka, InfluxDB, and Chronograf Helm charts out of the box since they use dynamic provisioning.
 
-The ``local-path-provisioner`` deployment is SQuaRE responsibility, but we expect mount points on each node of the LSP cluster to be ready to use. If these mount points are exported via NFS, we should consider resolving `DM-23307 <https://jira.lsstcorp.org/browse/DM-23307>`_ to avoid exporting NFS with the ``no_root_squash`` option.
-
+The ``local-path-provisioner`` deployment is part of the cluster infrastructure as well as the NFS export and the mount points on each node of the cluster.
 
 Networking
 ^^^^^^^^^^
@@ -152,16 +155,27 @@ Users of the LSP will access the LDF EFD running on the same cluster, but extern
 
 To enable external access to Chronograf, InfluxDB, Kafka Schema Registry, and Argo CD, the NCSA network configuration needs to whitelist the Ingress IP address.
 
-The LDF EFD Kafka broker does not require external access, it is used by Kafka Connect internally.
+The LDF EFD Kafka broker does not require external access, it is used by Kafka Connect and by the SAL Kafka producers running internally.
 
-We plan on using the same Argo CD already deployed on the LSP cluster. It would be nice to have a separate URL to access this service in addition to the current one.
+We plan on sharing the Argo CD already deployed on the LSP cluster.
 
-Given the above, NCSA will manage the DNS configuration and provide a TLS certificate for the following URLs:
+Given the above, NCSA will manage the DNS configuration and provide a TLS certificate for the following URLs, for the LSP integration cluster:
 
-* Argo CD: https://lsst-argocd-ldf.ncsa.illinois.edu
-* Kafka Schema Registry: https://lsst-schema-registry-ldf-efd.ncsa.illinois.edu
-* InfluxDB: https://lsst-influxdb-nts-ldf.ncsa.illinois.edu
-* Chronograf: https://lsst-chronograf-ldf-efd.ncsa.illinois.edu
+* Argo CD: https://lsst-lsp-int.ncsa.illinois.edu/argo-cd
+* Chronograf: https://lsst-chronograf-int-efd.ncsa.illinois.edu
+* InfluxDB: https://lsst-influxdb-int-efd.ncsa.illinois.edu
+* Confluent Control Center: https://lsst-control-center-int-efd.ncsa.illinois.edu
+* Kafka Schema Registry: https://lsst-schema-registry-int-efd.ncsa.illinois.edu
+* Kafka Broker: lsst-kafka-0-int-efd.ncsa.illinois.edu
+
+and for the LSP stable cluster:
+
+* Argo CD: https://lsst-lsp-stable.ncsa.illinois.edu/argo-cd
+* Chronograf: https://lsst-chronograf-efd.ncsa.illinois.edu
+* InfluxDB: https://lsst-influxdb-efd.ncsa.illinois.edu
+* Confluent Control Center: https://lsst-control-center-efd.ncsa.illinois.edu
+* Kafka Schema Registry: https://lsst-schema-registry-efd.ncsa.illinois.edu
+* Kafka Broker: lsst-kafka-0-efd.ncsa.illinois.edu
 
 The Ingress controller deployment on the LSP cluster is also managed by NCSA, while the ingress configuration for the LDF EFD services is SQuaRE's responsibility.
 
